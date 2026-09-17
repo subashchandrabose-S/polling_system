@@ -1,0 +1,49 @@
+# Root .gitignore for Polling System Monorepo
+
+# Environment variables & Secrets
+.env
+.env.*
+!.env.example
+*.env
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+build/
+.npm
+.eslintcache
+.vite/
+*.tsbuildinfo
+
+# Go / Backend
+backend/bin/
+backend/tmp/
+bin/
+tmp/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+
+# IDE / System / AI Editor Files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+.kilo/
+.gemini/
+
+# Docker / Logs / Data stores
+*.log
+logs/
+docker-data/
+mongo-data/
+redis-data/
