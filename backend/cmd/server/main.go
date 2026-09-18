@@ -90,6 +90,8 @@ func main() {
 
 	// ── Router ────────────────────────────────────────────────────────────────
 	router := gin.Default()
+	router.RedirectTrailingSlash = true
+	router.RedirectFixedPath = true
 
 	// Global Middlewares
 	router.Use(middleware.CORSMiddleware(cfg.CORSAllowedOrigins))
@@ -98,8 +100,34 @@ func main() {
 		router.Use(middleware.RateLimiter(redisInstance.Client, cfg.RateLimitRequests, cfg.RateLimitWindowSecs))
 	}
 
+	// Status response handler for root/api routes
+	statusHandler := func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"service": "PollStream Real-Time Polling Engine",
+			"status":  "online",
+			"version": "v1",
+			"time":    time.Now().UTC().Format(time.RFC3339),
+			"endpoints": gin.H{
+				"root":      "/",
+				"health":    "/health",
+				"api_v1":    "/api/v1",
+				"ping":      "/api/v1/ping",
+				"signup":    "/api/v1/auth/signup",
+				"login":     "/api/v1/auth/login",
+				"polls":     "/api/v1/polls",
+				"websocket": "/ws/poll/:shareCode",
+			},
+		})
+	}
+
+	// ── Root & Base API Endpoints (GET/HEAD for health checks & browsers) ─────
+	router.Any("/", statusHandler)
+	router.Any("/api", statusHandler)
+	router.Any("/api/v1", statusHandler)
+	router.Any("/api/v1/", statusHandler)
+
 	// ── Health Check ──────────────────────────────────────────────────────────
-	router.GET("/health", func(c *gin.Context) {
+	healthHandler := func(c *gin.Context) {
 		mongoStatus := "disconnected"
 		if mongoInstance != nil {
 			mongoStatus = "connected"
@@ -115,6 +143,26 @@ func main() {
 			"dependencies": gin.H{
 				"mongodb": mongoStatus,
 				"redis":   redisStatus,
+			},
+		})
+	}
+	router.Any("/health", healthHandler)
+	router.Any("/healthz", healthHandler)
+
+	// ── Custom 404 Handler ────────────────────────────────────────────────────
+	router.NoRoute(func(c *gin.Context) {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error":   "Endpoint not found",
+			"path":    c.Request.URL.Path,
+			"method":  c.Request.Method,
+			"message": "Verify the URL path. API routes are under /api/v1/ and WebSocket under /ws/poll/:shareCode",
+			"available_endpoints": gin.H{
+				"root":      "/",
+				"health":    "/health",
+				"api_ping":  "/api/v1/ping",
+				"auth":      "/api/v1/auth",
+				"polls":     "/api/v1/polls",
+				"websocket": "/ws/poll/:shareCode",
 			},
 		})
 	})

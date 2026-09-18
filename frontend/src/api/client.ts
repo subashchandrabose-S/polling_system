@@ -1,10 +1,13 @@
 // API base URL — reads from env in production, proxied in dev
-const API_BASE = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL}/api/v1`
+const rawUrl = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
+const cleanUrl = rawUrl.replace(/\/api\/v1\/?$/, '');
+
+const API_BASE = cleanUrl
+  ? `${cleanUrl}/api/v1`
   : '/api/v1';
 
-const WS_BASE = import.meta.env.VITE_API_URL
-  ? import.meta.env.VITE_API_URL.replace(/^http/, 'ws')
+const WS_BASE = cleanUrl
+  ? cleanUrl.replace(/^http/, 'ws')
   : `ws://${window.location.host}`;
 
 export { WS_BASE };
