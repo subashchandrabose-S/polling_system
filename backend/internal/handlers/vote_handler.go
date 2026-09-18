@@ -44,10 +44,11 @@ type voteRequest struct {
 
 // voteResultPayload is published to Redis and broadcast over WebSocket
 type voteResultPayload struct {
-	ShareCode   string            `json:"share_code"`
-	TotalVoters int64             `json:"total_voters"`
-	Counts      map[string]int64  `json:"counts"`
-	UpdatedAt   time.Time         `json:"updated_at"`
+	ShareCode    string           `json:"share_code"`
+	TotalVoters  int64            `json:"total_voters"`
+	Counts       map[string]int64 `json:"counts"`
+	LastOptionID string           `json:"last_option_id,omitempty"`
+	UpdatedAt    time.Time        `json:"updated_at"`
 }
 
 // Vote handles POST /api/v1/polls/:shareCode/vote (optional auth)
@@ -151,7 +152,7 @@ func (h *VoteHandler) Vote(c *gin.Context) {
 	}
 
 	// ── 5. Build current tally and publish to Redis channel ──────────────────
-	payload := h.buildVotePayload(ctx, shareCode, poll)
+	payload := h.buildVotePayload(ctx, shareCode, poll, req.OptionID)
 	payloadBytes, _ := json.Marshal(payload)
 
 	h.rdb.Publish(ctx, "poll:"+shareCode, string(payloadBytes))
@@ -172,7 +173,7 @@ func buildFingerprint(userID, ip, userAgent string) string {
 }
 
 // buildVotePayload reads current Redis counters and returns a structured tally
-func (h *VoteHandler) buildVotePayload(ctx context.Context, shareCode string, poll models.Poll) voteResultPayload {
+func (h *VoteHandler) buildVotePayload(ctx context.Context, shareCode string, poll models.Poll, lastOptionID string) voteResultPayload {
 	counts := make(map[string]int64)
 
 	if h.rdb != nil {
@@ -194,9 +195,10 @@ func (h *VoteHandler) buildVotePayload(ctx context.Context, shareCode string, po
 	}
 
 	return voteResultPayload{
-		ShareCode:   shareCode,
-		TotalVoters: totalVoters,
-		Counts:      counts,
-		UpdatedAt:   time.Now().UTC(),
+		ShareCode:    shareCode,
+		TotalVoters:  totalVoters,
+		Counts:       counts,
+		LastOptionID: lastOptionID,
+		UpdatedAt:    time.Now().UTC(),
 	}
 }

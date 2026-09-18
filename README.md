@@ -93,3 +93,6 @@ npm run dev
 | `/api/v1/polls/:shareCode/vote` | POST | Optional | Submit a vote |
 | `/api/v1/polls/:shareCode/close`| PUT | Owner | Close a poll |
 | `/ws/poll/:shareCode` | GET | Public | WebSocket for live updates |
+
+
+but i seeing the fail to crfeating polling so correct and then giving the link and qr to the attend that polling then that i set expiry date is not working...then i need more animatic responce in the any screen viewing

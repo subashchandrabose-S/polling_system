@@ -40,7 +40,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     (message: string, type: ToastType = 'info') => {
       const id = Math.random().toString(36).slice(2);
       setToasts(prev => [...prev.slice(-4), { id, message, type }]);
-      const timer = setTimeout(() => dismiss(id), 4000);
+      const timer = setTimeout(() => dismiss(id), 4500);
       timers.current.set(id, timer);
     },
     [dismiss],
@@ -53,29 +53,34 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      {/* Toast container */}
       <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 w-84 max-w-[calc(100vw-2.5rem)]">
         <AnimatePresence>
           {toasts.map(t => (
             <motion.div
               key={t.id}
-              initial={{ opacity: 0, y: 16, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 16, scale: 0.98 }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="flex items-start gap-3 p-3.5 rounded-xl border border-stone-300/80 bg-white/95 text-stone-900 shadow-lg backdrop-blur-sm text-xs sm:text-sm font-sans"
+              initial={{ opacity: 0, y: 16, scale: 0.96, x: 16 }}
+              animate={{ opacity: 1, y: 0,  scale: 1,    x: 0  }}
+              exit={{ opacity: 0,  y: 16, scale: 0.96, x: 16  }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className={`flex items-start gap-3 p-3.5 rounded-xl border text-sm font-sans shadow-xl backdrop-blur-md ${
+                t.type === 'success'
+                  ? 'bg-emerald-950/90 border-emerald-500/30 text-emerald-100'
+                  : t.type === 'error'
+                  ? 'bg-rose-950/90 border-rose-500/30 text-rose-100'
+                  : 'bg-slate-900/95 border-slate-700/60 text-slate-200'
+              }`}
             >
               {t.type === 'success' ? (
-                <CheckCircle2 className="w-4 h-4 mt-0.5 text-emerald-700 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 mt-0.5 text-emerald-400 shrink-0" />
               ) : t.type === 'error' ? (
-                <AlertCircle className="w-4 h-4 mt-0.5 text-red-700 shrink-0" />
+                <AlertCircle className="w-4 h-4 mt-0.5 text-rose-400 shrink-0" />
               ) : (
-                <Info className="w-4 h-4 mt-0.5 text-stone-700 shrink-0" />
+                <Info className="w-4 h-4 mt-0.5 text-cyan-400 shrink-0" />
               )}
-              <span className="flex-1 leading-snug font-medium text-stone-850">{t.message}</span>
+              <span className="flex-1 leading-snug font-medium text-xs sm:text-sm">{t.message}</span>
               <button
                 onClick={() => dismiss(t.id)}
-                className="shrink-0 p-0.5 text-stone-400 hover:text-stone-800 transition-colors"
+                className="shrink-0 p-0.5 opacity-60 hover:opacity-100 transition-opacity"
               >
                 <X className="w-3.5 h-3.5" />
               </button>

@@ -1,24 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
-import {
-  Clock, ExternalLink, Loader2, Plus, X
-} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Clock, ExternalLink, Loader2, Plus, Radio, TrendingUp, X } from 'lucide-react';
 import { api } from '../api/client';
 import type { Poll } from '../api/client';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/Toast';
+import { AnimatedCounter } from '../components/AnimatedCounter';
 
 function PollStatusBadge({ isActive }: { isActive: boolean }) {
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono uppercase tracking-wider border ${
-        isActive
-          ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-          : 'bg-stone-100 text-stone-600 border-stone-300'
-      }`}
-    >
-      <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-600' : 'bg-stone-400'}`} />
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-mono uppercase tracking-widest border ${
+      isActive
+        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+        : 'bg-slate-800/60 text-slate-600 border-slate-700'
+    }`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'}`} />
       {isActive ? 'Active' : 'Closed'}
     </span>
   );
@@ -26,14 +23,33 @@ function PollStatusBadge({ isActive }: { isActive: boolean }) {
 
 function SkeletonCard() {
   return (
-    <div className="bg-white border border-stone-200 rounded-xl p-5 animate-pulse shadow-xs">
+    <div className="glass-card rounded-2xl p-5 shimmer-bg">
       <div className="flex items-center justify-between mb-3">
-        <div className="h-3.5 w-16 bg-stone-200 rounded" />
-        <div className="h-4 w-20 bg-stone-200 rounded" />
+        <div className="h-5 w-20 bg-slate-800 rounded-lg" />
+        <div className="h-4 w-16 bg-slate-800 rounded" />
       </div>
-      <div className="h-5 w-3/4 bg-stone-200 rounded mb-2" />
-      <div className="h-4 w-1/2 bg-stone-100 rounded mb-4" />
-      <div className="h-8 w-full bg-stone-100 rounded" />
+      <div className="h-5 w-3/4 bg-slate-800 rounded mb-2" />
+      <div className="h-4 w-1/2 bg-slate-700 rounded mb-4" />
+      <div className="h-8 w-full bg-slate-800 rounded-lg" />
+    </div>
+  );
+}
+
+function StatBox({ label, value, accent, icon: Icon }: {
+  label: string;
+  value: number;
+  accent: string;
+  icon: React.ElementType;
+}) {
+  return (
+    <div className="glass-card rounded-xl p-4 sm:p-5 flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <Icon className={`w-4 h-4 ${accent}`} />
+        <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600">{label}</span>
+      </div>
+      <div className={`font-display text-3xl sm:text-4xl font-bold tabular-nums ${accent}`}>
+        <AnimatedCounter value={value} duration={900} />
+      </div>
     </div>
   );
 }
@@ -80,51 +96,51 @@ export function DashboardPage() {
   const totalVotesCast = polls.reduce((s, p) => s + p.total_votes, 0);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-8 py-8 sm:py-12 font-sans">
-      {/* Editorial Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-6 mb-8 border-b border-stone-200">
+    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 sm:py-12 font-sans">
+
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-6 mb-8 border-b border-white/[0.06]"
+      >
         <div>
-          <div className="text-xs font-mono uppercase tracking-wider text-stone-500 mb-1">
-            Dispatch Desk
+          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-slate-600 mb-2">
+            <Radio className="w-3.5 h-3.5 text-cyan-500/60" />
+            Control Room
           </div>
-          <h1 className="font-serif text-3xl sm:text-4xl font-normal tracking-tight text-stone-950">
-            Welcome back, <span className="italic">{user?.username}</span>
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
+            Welcome back,{' '}
+            <span className="bg-gradient-to-r from-cyan-400 to-violet-400 bg-clip-text text-transparent">
+              {user?.username}
+            </span>
           </h1>
-          <p className="text-stone-600 text-sm mt-1.5 max-w-xl">
-            Monitor real-time participation tallies and dispatch new community inquiries.
+          <p className="text-slate-500 text-sm mt-2 max-w-xl">
+            Monitor real-time participation and dispatch new polls to your audience.
           </p>
         </div>
         <Link
           to="/create"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-50 text-sm font-medium transition-colors shadow-xs shrink-0 self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white font-semibold text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/25 shrink-0 self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>New inquiry</span>
+          New poll
         </Link>
-      </div>
+      </motion.div>
 
-      {/* Editorial Stats Strip */}
+      {/* Stats strip */}
       {!loading && polls.length > 0 && (
-        <div className="grid grid-cols-3 gap-px bg-stone-200 border border-stone-200 rounded-xl overflow-hidden mb-10 shadow-xs">
-          <div className="bg-white p-4 sm:p-5">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-stone-500 mb-1">Total polls</div>
-            <div className="font-serif text-2xl sm:text-3xl font-medium text-stone-950 tabular-nums">
-              {polls.length}
-            </div>
-          </div>
-          <div className="bg-white p-4 sm:p-5">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-stone-500 mb-1">Active polls</div>
-            <div className="font-serif text-2xl sm:text-3xl font-medium text-emerald-850 tabular-nums">
-              {activePolls.length}
-            </div>
-          </div>
-          <div className="bg-white p-4 sm:p-5">
-            <div className="text-[11px] font-mono uppercase tracking-wider text-stone-500 mb-1">Total responses</div>
-            <div className="font-serif text-2xl sm:text-3xl font-medium text-stone-950 tabular-nums">
-              {totalVotesCast}
-            </div>
-          </div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="grid grid-cols-3 gap-4 mb-10"
+        >
+          <StatBox label="Total polls"   value={polls.length}       accent="text-slate-300"   icon={TrendingUp} />
+          <StatBox label="Active polls"  value={activePolls.length} accent="text-emerald-400" icon={Radio} />
+          <StatBox label="Total votes"   value={totalVotesCast}     accent="text-cyan-400"    icon={TrendingUp} />
+        </motion.div>
       )}
 
       {/* Polls list */}
@@ -133,31 +149,35 @@ export function DashboardPage() {
           {[1, 2, 3, 4].map(i => <SkeletonCard key={i} />)}
         </div>
       ) : polls.length === 0 ? (
-        <div className="text-center py-20 bg-white border border-stone-200 rounded-2xl p-8">
-          <div className="w-12 h-12 rounded-full bg-stone-100 flex items-center justify-center mx-auto mb-3 text-stone-500 font-serif text-xl">
-            §
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center py-24 glass-card rounded-2xl"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 border border-cyan-500/20 flex items-center justify-center mx-auto mb-4">
+            <Radio className="w-8 h-8 text-cyan-500/60" />
           </div>
-          <h2 className="font-serif text-2xl font-normal text-stone-900 mb-2">No polls dispatched yet</h2>
-          <p className="text-stone-600 text-sm max-w-md mx-auto mb-6">
-            Create your first question to share a direct URL or scan code for instant voter responses.
+          <h2 className="font-display text-2xl font-bold text-white mb-2">No polls yet</h2>
+          <p className="text-slate-500 text-sm max-w-sm mx-auto mb-7">
+            Create your first poll and share it — results update live as votes come in.
           </p>
           <Link
             to="/create"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-50 text-sm font-medium transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white font-semibold text-sm transition-all duration-200 hover:scale-105"
           >
             <Plus className="w-4 h-4" />
-            Create inquiry
+            Create your first poll
           </Link>
-        </div>
+        </motion.div>
       ) : (
         <div className="space-y-10">
-          {/* Active polls */}
+          {/* Active */}
           {activePolls.length > 0 && (
             <section>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xs font-mono uppercase tracking-wider text-stone-600 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                  Active Inquiries ({activePolls.length})
+              <div className="flex items-center gap-2 mb-5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <h2 className="text-[11px] font-mono uppercase tracking-widest text-slate-500">
+                  Active Polls ({activePolls.length})
                 </h2>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -176,13 +196,13 @@ export function DashboardPage() {
             </section>
           )}
 
-          {/* Closed polls */}
+          {/* Closed */}
           {closedPolls.length > 0 && (
             <section>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xs font-mono uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5" />
-                  Archived Inquiries ({closedPolls.length})
+              <div className="flex items-center gap-2 mb-5">
+                <Clock className="w-3.5 h-3.5 text-slate-600" />
+                <h2 className="text-[11px] font-mono uppercase tracking-widest text-slate-600">
+                  Archived Polls ({closedPolls.length})
                 </h2>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -204,70 +224,73 @@ export function DashboardPage() {
   );
 }
 
-// ── Poll card sub-component ──────────────────────────────────────────────────
+// ── Poll Card ────────────────────────────────────────────────────────────────
 
 function PollCard({
-  poll,
-  onClose,
-  closing,
+  poll, index = 0, onClose, closing,
 }: {
   poll: Poll;
   index?: number;
   onClose: (shareCode: string) => void;
   closing: boolean;
 }) {
-
   return (
-    <div
-      className={`bg-white border rounded-xl p-5 shadow-xs transition-all flex flex-col justify-between gap-4 ${
-        poll.is_active ? 'border-stone-200 hover:border-stone-300' : 'border-stone-200/60 bg-stone-50/50'
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 16, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      transition={{ delay: index * 0.06, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className={`glass-card rounded-2xl p-5 flex flex-col justify-between gap-4 transition-all duration-300 hover:border-slate-600/60 ${
+        poll.is_active ? 'border-slate-700/60' : 'border-slate-800/40 opacity-70'
       }`}
     >
-      {/* Top details */}
+      {/* Top */}
       <div>
-        <div className="flex items-center justify-between gap-3 mb-2.5">
+        <div className="flex items-center justify-between gap-3 mb-3">
           <PollStatusBadge isActive={poll.is_active} />
-          <div className="text-xs font-mono text-stone-500 tabular-nums">
-            <span className="font-semibold text-stone-800">{poll.total_votes}</span>{' '}
-            {poll.total_votes === 1 ? 'response' : 'responses'}
+          <div className="text-xs font-mono text-slate-500 tabular-nums">
+            <AnimatedCounter value={poll.total_votes} className="font-bold text-slate-300" />
+            {' '}{poll.total_votes === 1 ? 'vote' : 'votes'}
           </div>
         </div>
-
-        <h3 className="font-serif text-lg font-medium text-stone-900 leading-snug line-clamp-2">
+        <h3 className="font-display font-semibold text-white leading-snug line-clamp-2 mb-3">
           {poll.title}
         </h3>
       </div>
 
-      {/* Option preview list */}
-      <div className="space-y-2 py-2 border-y border-stone-100">
+      {/* Option mini-bars */}
+      <div className="space-y-2 py-3 border-y border-white/[0.05]">
         {poll.options.slice(0, 3).map(opt => {
           const pct = poll.total_votes > 0 ? Math.round((opt.vote_count / poll.total_votes) * 100) : 0;
           return (
-            <div key={opt.id} className="text-xs flex items-center gap-2">
-              <span className="text-stone-700 w-32 truncate">{opt.text}</span>
-              <div className="flex-1 bg-stone-100 rounded-full h-1.5 overflow-hidden">
-                <div
-                  className="h-full bg-stone-700 rounded-full"
-                  style={{ width: `${pct}%` }}
+            <div key={opt.id} className="flex items-center gap-2 text-xs">
+              <span className="text-slate-400 w-28 truncate">{opt.text}</span>
+              <div className="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-cyan-500/70 to-violet-500/70"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                 />
               </div>
-              <span className="text-[11px] font-mono text-stone-500 w-8 text-right tabular-nums">{pct}%</span>
+              <span className="font-mono text-slate-600 w-8 text-right">{pct}%</span>
             </div>
           );
         })}
         {poll.options.length > 3 && (
-          <p className="text-[11px] font-mono text-stone-400">+{poll.options.length - 3} additional options</p>
+          <p className="text-[10px] font-mono text-slate-700">+{poll.options.length - 3} more options</p>
         )}
       </div>
 
-      {/* Action footer */}
+      {/* Footer actions */}
       <div className="flex items-center justify-between pt-1">
         <Link
           to={`/poll/${poll.share_code}`}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium text-stone-700 hover:text-stone-950 hover:bg-stone-100 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-all duration-200"
         >
           <ExternalLink className="w-3.5 h-3.5" />
-          <span>Open live page</span>
+          Open live
         </Link>
 
         {poll.is_active && (
@@ -275,17 +298,13 @@ function PollCard({
             id={`close-poll-${poll.share_code}`}
             onClick={() => onClose(poll.share_code)}
             disabled={closing}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-mono text-stone-500 hover:text-red-700 hover:bg-red-50 disabled:opacity-50 transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 disabled:opacity-50 transition-all duration-200"
           >
-            {closing ? (
-              <Loader2 className="w-3 h-3 animate-spin" />
-            ) : (
-              <X className="w-3 h-3" />
-            )}
-            Conclude
+            {closing ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
+            Close
           </button>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

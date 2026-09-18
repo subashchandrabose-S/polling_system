@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Eye, EyeOff, LogIn, Radio } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { api } from '../api/client';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/Toast';
@@ -22,7 +23,7 @@ export function LoginPage() {
   function validate() {
     const e: typeof errors = {};
     if (!email.includes('@')) e.email = 'Please provide a valid email address';
-    if (password.length < 8) e.password = 'Password must contain at least 8 characters';
+    if (password.length < 8) e.password = 'Password must be at least 8 characters';
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -45,22 +46,32 @@ export function LoginPage() {
 
   return (
     <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center p-4 font-sans">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white border border-stone-200 rounded-2xl p-7 sm:p-9 shadow-xs">
+      {/* Background glow */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-violet-500/5 blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full bg-cyan-500/5 blur-3xl" />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="relative w-full max-w-md"
+      >
+        <div className="glass-card gradient-border rounded-2xl p-7 sm:p-9">
           {/* Header */}
           <div className="mb-7 text-center">
-            <div className="w-10 h-10 rounded-xl bg-stone-900 text-[#faf9f5] flex items-center justify-center font-serif text-lg mx-auto mb-3">
-              ¶
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-500/25">
+              <Radio className="w-6 h-6 text-white" />
             </div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-normal text-stone-950">Welcome back</h1>
-            <p className="text-stone-600 text-xs sm:text-sm mt-1">Sign in to manage your poll dispatches</p>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-white">Welcome back</h1>
+            <p className="text-slate-500 text-xs sm:text-sm mt-1.5">Sign in to manage your live polls</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4.5" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             {/* Email */}
             <div>
-              <label htmlFor="login-email" className="block text-xs font-mono uppercase tracking-wider text-stone-700 mb-1.5">
+              <label htmlFor="login-email" className="block text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1.5">
                 Email address
               </label>
               <input
@@ -69,17 +80,17 @@ export function LoginPage() {
                 autoComplete="email"
                 value={email}
                 onChange={e => { setEmail(e.target.value); setErrors(p => ({ ...p, email: undefined })); }}
-                placeholder="editor@domain.com"
-                className={`w-full px-3.5 py-2.5 rounded-lg bg-[#faf9f5] border text-stone-900 placeholder:text-stone-400 text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-stone-900 focus:bg-white ${
-                  errors.email ? 'border-red-400 bg-red-50/20' : 'border-stone-300 hover:border-stone-400'
+                placeholder="you@domain.com"
+                className={`w-full px-4 py-2.5 rounded-xl bg-slate-900/70 border text-white placeholder:text-slate-600 text-sm transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/50 focus:bg-slate-900 ${
+                  errors.email ? 'border-rose-500/60 bg-rose-500/5' : 'border-slate-700/60 hover:border-slate-600'
                 }`}
               />
-              {errors.email && <p className="mt-1 text-xs font-mono text-red-600">{errors.email}</p>}
+              {errors.email && <p className="mt-1 text-[11px] font-mono text-rose-400">{errors.email}</p>}
             </div>
 
             {/* Password */}
             <div>
-              <label htmlFor="login-password" className="block text-xs font-mono uppercase tracking-wider text-stone-700 mb-1.5">
+              <label htmlFor="login-password" className="block text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1.5">
                 Password
               </label>
               <div className="relative">
@@ -90,41 +101,40 @@ export function LoginPage() {
                   value={password}
                   onChange={e => { setPassword(e.target.value); setErrors(p => ({ ...p, password: undefined })); }}
                   placeholder="••••••••"
-                  className={`w-full px-3.5 py-2.5 pr-10 rounded-lg bg-[#faf9f5] border text-stone-900 placeholder:text-stone-400 text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-stone-900 focus:bg-white ${
-                    errors.password ? 'border-red-400 bg-red-50/20' : 'border-stone-300 hover:border-stone-400'
+                  className={`w-full px-4 py-2.5 pr-11 rounded-xl bg-slate-900/70 border text-white placeholder:text-slate-600 text-sm transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/50 focus:bg-slate-900 ${
+                    errors.password ? 'border-rose-500/60 bg-rose-500/5' : 'border-slate-700/60 hover:border-slate-600'
                   }`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(p => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-300 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {errors.password && <p className="mt-1 text-xs font-mono text-red-600">{errors.password}</p>}
+              {errors.password && <p className="mt-1 text-[11px] font-mono text-rose-400">{errors.password}</p>}
             </div>
 
-            {/* Submit */}
             <button
               id="login-submit"
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 mt-2 rounded-lg bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-stone-50 font-medium text-sm transition-colors shadow-xs"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 mt-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 disabled:opacity-50 text-white font-semibold text-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-violet-500/25"
             >
               {loading ? <LoadingSpinner size="sm" /> : <LogIn className="w-4 h-4" />}
-              <span>{loading ? 'Authenticating…' : 'Sign in to desk'}</span>
+              <span>{loading ? 'Authenticating…' : 'Sign in'}</span>
             </button>
           </form>
 
-          <p className="text-center text-xs text-stone-500 mt-6 pt-5 border-t border-stone-100">
+          <p className="text-center text-xs text-slate-600 mt-6 pt-5 border-t border-white/[0.06]">
             Need an account?{' '}
-            <Link to="/signup" className="text-stone-900 underline underline-offset-4 hover:text-stone-600 font-medium transition-colors">
-              Create an account
+            <Link to="/signup" className="text-violet-400 hover:text-violet-300 font-medium transition-colors">
+              Create account
             </Link>
           </p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

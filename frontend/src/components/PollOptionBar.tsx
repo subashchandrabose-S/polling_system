@@ -31,66 +31,73 @@ export function PollOptionBar({
       onClick={onClick}
       disabled={disabled}
       type="button"
-      className={`w-full text-left p-4 sm:p-4.5 rounded-xl border transition-all relative overflow-hidden group focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 ${
+      className={`w-full text-left p-4 rounded-xl border transition-all duration-300 relative overflow-hidden group focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/60 ${
         hasVoted
           ? isWinner
-            ? 'border-stone-900 bg-stone-100/70 shadow-xs'
-            : 'border-stone-200/80 bg-white/70'
+            ? 'border-cyan-500/50 bg-slate-800/70 shadow-lg shadow-cyan-500/10'
+            : 'border-slate-700/60 bg-slate-900/50'
           : isSelected
-          ? 'border-stone-900 bg-stone-100/80 ring-1 ring-stone-900/10'
-          : 'border-stone-200 bg-white hover:border-stone-400 hover:bg-stone-50/70 cursor-pointer shadow-xs'
+          ? 'border-cyan-500/70 bg-slate-800/80 shadow-lg shadow-cyan-500/15 ring-1 ring-cyan-500/20'
+          : 'border-slate-700/50 bg-slate-900/40 hover:border-slate-500/70 hover:bg-slate-800/50 cursor-pointer'
       }`}
     >
       {/* Animated result fill bar */}
       {hasVoted && (
         <motion.div
-          className={`absolute inset-y-0 left-0 ${
-            isWinner ? 'bg-stone-200/90' : 'bg-stone-100/80'
+          className={`absolute inset-y-0 left-0 rounded-xl ${
+            isWinner
+              ? 'bg-gradient-to-r from-cyan-500/20 to-violet-500/10'
+              : 'bg-slate-700/25'
           }`}
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         />
       )}
 
+      {/* Winner neon border glow */}
+      {hasVoted && isWinner && (
+        <div className="absolute inset-0 rounded-xl border border-cyan-500/30 pointer-events-none animate-glow-pulse" />
+      )}
+
       <div className="relative z-10 flex items-center justify-between gap-4">
-        {/* Left: radio indicator + text */}
+        {/* Left: indicator + text */}
         <div className="flex items-center gap-3.5 min-w-0">
           <span
-            className={`w-4 h-4 rounded-full shrink-0 border transition-all flex items-center justify-center ${
+            className={`w-4 h-4 rounded-full shrink-0 border-2 transition-all duration-300 flex items-center justify-center ${
               isSelected && !hasVoted
-                ? 'border-stone-900 bg-stone-900'
+                ? 'border-cyan-400 bg-cyan-400 shadow-sm shadow-cyan-400/50'
                 : hasVoted && isWinner
-                ? 'border-stone-900 bg-stone-900'
-                : 'border-stone-300 bg-white group-hover:border-stone-500'
+                ? 'border-cyan-400 bg-cyan-400 shadow-sm shadow-cyan-400/50'
+                : 'border-slate-600 bg-transparent group-hover:border-slate-400'
             }`}
           >
             {(isSelected || (hasVoted && isWinner)) && (
-              <span className="w-1.5 h-1.5 rounded-full bg-[#faf9f5]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-950" />
             )}
           </span>
           <span
-            className={`text-sm sm:text-base leading-relaxed tracking-tight ${
+            className={`text-sm sm:text-base leading-snug tracking-tight truncate ${
               isSelected || (hasVoted && isWinner)
-                ? 'font-semibold text-stone-950'
-                : 'font-normal text-stone-800'
+                ? 'font-semibold text-white'
+                : 'font-medium text-slate-300'
             }`}
           >
             {text}
           </span>
         </div>
 
-        {/* Right: percentage + vote count */}
+        {/* Right: percentage + count */}
         {hasVoted && (
           <div className="text-right shrink-0">
             <div
-              className={`text-base font-serif font-semibold tabular-nums ${
-                isWinner ? 'text-stone-950' : 'text-stone-600'
+              className={`text-lg font-display font-bold tabular-nums ${
+                isWinner ? 'text-cyan-400 text-glow-cyan' : 'text-slate-500'
               }`}
             >
               {pct}%
             </div>
-            <div className="text-[11px] font-mono text-stone-500 tabular-nums">
+            <div className="text-[10px] font-mono text-slate-600 tabular-nums">
               {votes} {votes === 1 ? 'vote' : 'votes'}
             </div>
           </div>

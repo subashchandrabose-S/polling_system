@@ -137,6 +137,11 @@ func (h *PollHandler) GetPollByShareCode(c *gin.Context) {
 		return
 	}
 
+	// Check if poll has passed expiry time
+	if poll.ExpiresAt != nil && time.Now().UTC().After(*poll.ExpiresAt) {
+		poll.IsActive = false
+	}
+
 	// Merge live Redis vote counts if available
 	if h.rdb != nil {
 		redisKey := "poll:votes:" + shareCode
