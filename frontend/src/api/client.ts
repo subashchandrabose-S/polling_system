@@ -6,9 +6,12 @@ const API_BASE = cleanUrl
   ? `${cleanUrl}/api/v1`
   : '/api/v1';
 
-const WS_BASE = cleanUrl
-  ? cleanUrl.replace(/^http/, 'ws')
-  : `ws://${window.location.host}`;
+const WS_RAW = (import.meta.env.VITE_WS_URL || '').trim().replace(/\/+$/, '');
+const WS_BASE = WS_RAW
+  ? WS_RAW.replace(/^http/, 'ws')
+  : cleanUrl
+    ? cleanUrl.replace(/^http/, 'ws')
+    : (typeof window === 'undefined' ? '' : `ws://${window.location.host}`);
 
 export { WS_BASE };
 
@@ -122,6 +125,9 @@ export const api = {
       data: { title: string; description?: string; options: { text: string }[]; expires_at?: string },
     ) =>
       request<Poll>('/polls', { method: 'POST', body: JSON.stringify(data) }, token),
+
+    getPublicPolls: () =>
+      request<{ polls: Poll[]; count: number }>('/polls'),
 
     getByShareCode: (shareCode: string) =>
       request<Poll>(`/polls/${shareCode}`),

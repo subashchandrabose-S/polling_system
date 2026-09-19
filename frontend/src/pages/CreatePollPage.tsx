@@ -6,6 +6,7 @@ import { api } from '../api/client';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/Toast';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { getVotingPath } from '../utils/pollUrl';
 
 export function CreatePollPage() {
   const { token } = useAuth();
@@ -38,6 +39,9 @@ export function CreatePollPage() {
     options.forEach((opt, i) => {
       if (opt.trim().length === 0) e[`option-${i}`] = 'Option cannot be blank';
     });
+    if (expiresAt && new Date(expiresAt).getTime() <= Date.now()) {
+      e.expiresAt = 'Expiry must be in the future';
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -55,7 +59,7 @@ export function CreatePollPage() {
       };
       const poll = await api.polls.create(token!, payload);
       toast('Poll published successfully! 🎉', 'success');
-      navigate(`/poll/${poll.share_code}`);
+      navigate(getVotingPath(poll.share_code), { replace: true });
     } catch (err) {
       toast((err as Error).message || 'Failed to create poll', 'error');
     } finally {
@@ -64,8 +68,8 @@ export function CreatePollPage() {
   }
 
   const inputClass = (hasError: boolean) =>
-    `w-full px-4 py-2.5 rounded-xl bg-slate-900/70 border text-white placeholder:text-slate-600 text-sm transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 focus:bg-slate-900 ${
-      hasError ? 'border-rose-500/60 bg-rose-500/5' : 'border-slate-700/60 hover:border-slate-600'
+    `w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900/70 border text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 text-sm transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 focus:bg-white dark:focus:bg-slate-900 ${
+      hasError ? 'border-rose-500/60 bg-rose-500/5' : 'border-slate-200 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600'
     }`;
 
   return (
@@ -75,13 +79,13 @@ export function CreatePollPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="pb-6 mb-8 border-b border-white/[0.06]"
+        className="pb-6 mb-8 border-b border-slate-200 dark:border-white/[0.06]"
       >
         <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-slate-600 mb-2">
           <Radio className="w-3.5 h-3.5 text-cyan-500/50" />
           Broadcast Studio
         </div>
-        <h1 className="font-display text-3xl sm:text-4xl font-bold text-white tracking-tight">
+        <h1 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">
           Create New Poll
         </h1>
         <p className="text-slate-500 text-sm mt-2">
@@ -98,7 +102,7 @@ export function CreatePollPage() {
           transition={{ delay: 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="glass-card rounded-2xl p-6 sm:p-7"
         >
-          <div className="text-[10px] font-mono uppercase tracking-widest text-slate-600 mb-4 pb-2 border-b border-white/[0.06]">
+          <div className="text-[10px] font-mono uppercase tracking-widest text-slate-600 mb-4 pb-2 border-b border-slate-200 dark:border-white/[0.06]">
             Question Details
           </div>
           <div className="space-y-4">
@@ -127,7 +131,7 @@ export function CreatePollPage() {
                 placeholder="Provide background or context for respondents…"
                 rows={3}
                 maxLength={1000}
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-900/70 border border-slate-700/60 hover:border-slate-600 text-white placeholder:text-slate-600 text-sm resize-none transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 focus:bg-slate-900"
+                className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 text-sm resize-none transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 focus:bg-white dark:focus:bg-slate-900"
               />
             </div>
           </div>
@@ -140,7 +144,7 @@ export function CreatePollPage() {
           transition={{ delay: 0.14, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="glass-card rounded-2xl p-6 sm:p-7"
         >
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/[0.06]">
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-200 dark:border-white/[0.06]">
             <div className="text-[10px] font-mono uppercase tracking-widest text-slate-600">
               Answer Options
             </div>
@@ -205,7 +209,7 @@ export function CreatePollPage() {
           transition={{ delay: 0.2, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="glass-card rounded-2xl p-6 sm:p-7"
         >
-          <div className="text-[10px] font-mono uppercase tracking-widest text-slate-600 mb-4 pb-2 border-b border-white/[0.06]">
+          <div className="text-[10px] font-mono uppercase tracking-widest text-slate-600 mb-4 pb-2 border-b border-slate-200 dark:border-white/[0.06]">
             Schedule & Expiry
           </div>
           <label htmlFor="poll-expires" className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-2">
@@ -216,9 +220,10 @@ export function CreatePollPage() {
             id="poll-expires"
             type="datetime-local"
             value={expiresAt}
-            onChange={e => setExpiresAt(e.target.value)}
-            className="px-4 py-2.5 rounded-xl bg-slate-900/70 border border-slate-700/60 hover:border-slate-600 text-white text-sm transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50"
+            onChange={e => { setExpiresAt(e.target.value); setErrors(p => ({ ...p, expiresAt: '' })); }}
+            className="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600 text-slate-900 dark:text-white text-sm transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50"
           />
+          {errors.expiresAt && <p className="mt-1 text-[11px] font-mono text-rose-400">{errors.expiresAt}</p>}
           <p className="text-[11px] text-slate-700 mt-2 font-mono">
             Leave empty to keep open until manually closed.
           </p>

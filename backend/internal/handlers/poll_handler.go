@@ -14,6 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const shareCodeChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -55,11 +56,38 @@ func generateShareCode() string {
 	return string(b)
 }
 
+func isExpiredPoll(poll *models.Poll, now time.Time) bool {
+	return poll.IsActive && poll.ExpiresAt != nil && now.After(*poll.ExpiresAt)
+}
+
+func markExpiredPoll(ctx context.Context, collection *mongo.Collection, poll *models.Poll) bool {
+	if !isExpiredPoll(poll, time.Now().UTC()) {
+		return false
+	}
+
+	now := time.Now().UTC()
+	update := bson.M{
+		"$set": bson.M{
+			"is_active":  false,
+			"updated_at": now,
+		},
+	}
+	if _, err := collection.UpdateOne(ctx, bson.M{"share_code": poll.ShareCode}, update); err == nil {
+		poll.IsActive = false
+		poll.UpdatedAt = now
+	}
+	return true
+}
+
 // CreatePoll handles POST /api/v1/polls (auth required)
 func (h *PollHandler) CreatePoll(c *gin.Context) {
 	var req createPollRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if req.ExpiresAt != nil && !time.Now().UTC().Before(*req.ExpiresAt) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Expiry must be in the future"})
 		return
 	}
 
@@ -137,10 +165,7 @@ func (h *PollHandler) GetPollByShareCode(c *gin.Context) {
 		return
 	}
 
-	// Check if poll has passed expiry time
-	if poll.ExpiresAt != nil && time.Now().UTC().After(*poll.ExpiresAt) {
-		poll.IsActive = false
-	}
+	markExpiredPoll(ctx, h.pollsColl, &poll)
 
 	// Merge live Redis vote counts if available
 	if h.rdb != nil {
@@ -199,6 +224,10 @@ func (h *PollHandler) GetMyPolls(c *gin.Context) {
 	if polls == nil {
 		polls = []models.Poll{}
 	}
+
+	for i := range polls {
+		markExpiredPoll(ctx, h.pollsColl, &polls[i])
+	}
 	c.JSON(http.StatusOK, gin.H{"polls": polls, "count": len(polls)})
 }
 
@@ -223,6 +252,11 @@ func (h *PollHandler) ClosePoll(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+
+	if markExpiredPoll(ctx, h.pollsColl, &poll) {
+		c.JSON(http.StatusConflict, gin.H{"error": "This poll has expired"})
 		return
 	}
 
@@ -251,4 +285,57 @@ func (h *PollHandler) ClosePoll(c *gin.Context) {
 	poll.IsActive = false
 	poll.UpdatedAt = now
 	c.JSON(http.StatusOK, poll)
+}
+
+// GetPublicPolls handles GET /api/v1/polls (public - lists recent polls for everyone to explore and vote)
+func (h *PollHandler) GetPublicPolls(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	findOpts := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}}).SetLimit(50)
+	cursor, err := h.pollsColl.Find(ctx, bson.M{}, findOpts)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+	defer cursor.Close(ctx)
+
+	var polls []models.Poll
+	if err := cursor.All(ctx, &polls); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode polls"})
+		return
+	}
+
+	if polls == nil {
+		polls = []models.Poll{}
+	}
+
+	for i := range polls {
+		markExpiredPoll(ctx, h.pollsColl, &polls[i])
+		if h.rdb != nil {
+			redisKey := "poll:votes:" + polls[i].ShareCode
+			counts, err := h.rdb.HGetAll(ctx, redisKey).Result()
+			if err == nil && len(counts) > 0 {
+				for j, opt := range polls[i].Options {
+					if val, ok := counts[opt.ID]; ok {
+						var count int64
+						for _, ch := range val {
+							count = count*10 + int64(ch-'0')
+						}
+						polls[i].Options[j].VoteCount = count
+					}
+				}
+				totalStr, err := h.rdb.Get(ctx, "poll:voters:"+polls[i].ShareCode).Result()
+				if err == nil {
+					var total int64
+					for _, ch := range totalStr {
+						total = total*10 + int64(ch-'0')
+					}
+					polls[i].TotalVotes = total
+				}
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"polls": polls, "count": len(polls)})
 }

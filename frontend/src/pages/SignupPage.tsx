@@ -96,8 +96,8 @@ export function SignupPage() {
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-cyan-500/25">
               <Radio className="w-6 h-6 text-white" />
             </div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-white">Create account</h1>
-            <p className="text-slate-500 text-xs sm:text-sm mt-1.5">Join PollStream and start running live polls</p>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">Create account</h1>
+            <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm mt-1.5">Join PollStream and start running live polls</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
@@ -113,8 +113,8 @@ export function SignupPage() {
                 value={username}
                 onChange={e => { setUsername(e.target.value); setErrors(p => ({ ...p, username: undefined })); }}
                 placeholder="your_username"
-                className={`w-full px-4 py-2.5 rounded-xl bg-slate-900/70 border text-white placeholder:text-slate-600 text-sm transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 focus:bg-slate-900 ${
-                  errors.username ? 'border-rose-500/60 bg-rose-500/5' : 'border-slate-700/60 hover:border-slate-600'
+                className={`w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900/70 border text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 text-sm transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 focus:bg-white dark:focus:bg-slate-900 ${
+                  errors.username ? 'border-rose-500/60 bg-rose-500/5' : 'border-slate-200 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600'
                 }`}
               />
               {errors.username && <p className="mt-1 text-[11px] font-mono text-rose-400">{errors.username}</p>}
@@ -132,8 +132,8 @@ export function SignupPage() {
                 value={email}
                 onChange={e => { setEmail(e.target.value); setErrors(p => ({ ...p, email: undefined })); }}
                 placeholder="you@domain.com"
-                className={`w-full px-4 py-2.5 rounded-xl bg-slate-900/70 border text-white placeholder:text-slate-600 text-sm transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 focus:bg-slate-900 ${
-                  errors.email ? 'border-rose-500/60 bg-rose-500/5' : 'border-slate-700/60 hover:border-slate-600'
+                className={`w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900/70 border text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 text-sm transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 focus:bg-white dark:focus:bg-slate-900 ${
+                  errors.email ? 'border-rose-500/60 bg-rose-500/5' : 'border-slate-200 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600'
                 }`}
               />
               {errors.email && <p className="mt-1 text-[11px] font-mono text-rose-400">{errors.email}</p>}
@@ -152,8 +152,8 @@ export function SignupPage() {
                   value={password}
                   onChange={e => { setPassword(e.target.value); setErrors(p => ({ ...p, password: undefined })); }}
                   placeholder="••••••••"
-                  className={`w-full px-4 py-2.5 pr-11 rounded-xl bg-slate-900/70 border text-white placeholder:text-slate-600 text-sm transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 focus:bg-slate-900 ${
-                    errors.password ? 'border-rose-500/60 bg-rose-500/5' : 'border-slate-700/60 hover:border-slate-600'
+                  className={`w-full px-4 py-2.5 pr-11 rounded-xl bg-white dark:bg-slate-900/70 border text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 text-sm transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 focus:bg-white dark:focus:bg-slate-900 ${
+                    errors.password ? 'border-rose-500/60 bg-rose-500/5' : 'border-slate-200 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600'
                   }`}
                 />
                 <button
@@ -178,7 +178,7 @@ export function SignupPage() {
                       <div
                         key={i}
                         className={`h-1 flex-1 rounded-full transition-all duration-400 ${
-                          i < strengthScore ? strengthColor : 'bg-slate-800'
+                          i < strengthScore ? strengthColor : 'bg-slate-200 dark:bg-slate-800'
                         }`}
                       />
                     ))}
@@ -204,10 +204,10 @@ export function SignupPage() {
           {/* Social OAuth divider */}
           <div className="relative my-5">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/[0.06]" />
+              <div className="w-full border-t border-slate-200 dark:border-white/[0.06]" />
             </div>
             <div className="relative flex justify-center text-[11px]">
-              <span className="px-3 bg-[#111827] text-slate-500 font-mono uppercase tracking-widest">
+              <span className="px-3 bg-white dark:bg-[var(--bg-card)] text-slate-500 font-mono uppercase tracking-widest">
                 or sign up with
               </span>
             </div>
@@ -217,7 +217,7 @@ export function SignupPage() {
             <a
               id="signup-google"
               href={oauthUrl('google')}
-              className="flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl border border-white/[0.09] bg-white/[0.03] hover:bg-white/[0.07] text-slate-200 text-xs font-semibold transition-all duration-200 hover:border-white/20 hover:scale-[1.02] active:scale-95"
+              className="flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl border border-slate-200 dark:border-white/[0.09] bg-slate-50 dark:bg-white/[0.03] hover:bg-slate-100 dark:hover:bg-white/[0.07] text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all duration-200 hover:border-slate-300 dark:hover:border-white/20 hover:scale-[1.02] active:scale-95"
             >
               <GoogleIcon />
               Google
@@ -225,14 +225,14 @@ export function SignupPage() {
             <a
               id="signup-github"
               href={oauthUrl('github')}
-              className="flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl border border-white/[0.09] bg-white/[0.03] hover:bg-white/[0.07] text-slate-200 text-xs font-semibold transition-all duration-200 hover:border-white/20 hover:scale-[1.02] active:scale-95"
+              className="flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl border border-slate-200 dark:border-white/[0.09] bg-slate-50 dark:bg-white/[0.03] hover:bg-slate-100 dark:hover:bg-white/[0.07] text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all duration-200 hover:border-slate-300 dark:hover:border-white/20 hover:scale-[1.02] active:scale-95"
             >
               <GithubIcon />
               GitHub
             </a>
           </div>
 
-          <p className="text-center text-xs text-slate-600 mt-6 pt-5 border-t border-white/[0.06]">
+          <p className="text-center text-xs text-slate-600 mt-6 pt-5 border-t border-slate-200 dark:border-white/[0.06]">
             Already have an account?{' '}
             <Link to="/login" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
               Sign in

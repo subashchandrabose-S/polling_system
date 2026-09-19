@@ -54,7 +54,7 @@ export function StreamIndicator({ connected, msgCount = 0 }: StreamIndicatorProp
             )}
           </div>
           <span className="text-xs font-mono uppercase tracking-widest text-slate-400">
-            Redis Stream
+            Realtime (Go, Redis, WS)
           </span>
         </div>
         <div className={`flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 rounded-full border ${

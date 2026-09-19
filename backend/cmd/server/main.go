@@ -237,6 +237,7 @@ func main() {
 			polls := v1.Group("/polls")
 			{
 				// Public
+				polls.GET("", pollHandler.GetPublicPolls)
 				polls.GET("/:shareCode", pollHandler.GetPollByShareCode)
 
 				// Auth required

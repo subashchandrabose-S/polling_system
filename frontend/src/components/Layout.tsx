@@ -1,132 +1,158 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { LogOut, Plus, Radio } from 'lucide-react';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { LogOut, Plus, Search, Bell, Radio, Sun, Moon, Compass } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { MobileNavBar } from './MobileNavBar';
+import { Sidebar } from './Sidebar';
+import { useTheme } from '../context/ThemeContext';
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { setTheme, isDark } = useTheme();
 
   function handleLogout() {
     logout();
     navigate('/');
   }
 
+  // Hide topnav on dashboard if using full sidebar layout, or we can make a specific topnav for dashboard
+  const isDashboardRoute = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/create') || location.pathname.startsWith('/analytics');
+
   return (
-    <div className="min-h-screen bg-[var(--bg-base)] text-slate-200 flex flex-col font-sans selection:bg-cyan-500/25 selection:text-cyan-100">
-      {/* ── Header ────────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 glass border-b border-white/[0.06]">
-        <nav className="max-w-6xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-main)] flex font-sans selection:bg-primary/20 selection:text-primary">
+      {/* Sidebar for authenticated routes */}
+      {isAuthenticated && isDashboardRoute && <Sidebar />}
 
-          {/* Brand */}
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center shadow-lg shadow-cyan-500/20 transition-transform duration-200 group-hover:scale-95">
-              <Radio className="w-4 h-4 text-white" />
-              {/* Pulse ring */}
-              <span className="absolute inset-0 rounded-xl border border-cyan-400/50 animate-pulse-ring" />
-            </div>
-            <span className="font-display text-lg font-bold tracking-tight text-white">
-              PollStream
-            </span>
-            <span className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-mono uppercase tracking-widest rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400">
-              <span className="w-1 h-1 rounded-full bg-cyan-400 animate-pulse" />
-              Live
-            </span>
-          </Link>
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* ── Header ────────────────────────────────────────────────────────────── */}
+        <header className="sticky top-0 z-40 bg-white/80 dark:bg-[var(--bg-surface)]/80 backdrop-blur-xl border-b border-slate-200 dark:border-[var(--border)] shadow-sm">
+          <nav className="w-full px-3 sm:px-8 h-16 flex items-center justify-between gap-2">
 
-          {/* Right actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {isAuthenticated ? (
-              <>
-                <NavLink
-                  to="/dashboard"
-                  className={({ isActive }) =>
-                    `px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
-                      isActive
-                        ? 'text-white bg-white/10 border border-white/10'
-                        : 'text-slate-400 hover:text-white hover:bg-white/5'
-                    }`
-                  }
-                >
-                  Dashboard
-                </NavLink>
+            {/* Left Section (Brand or Search) */}
+            <div className="flex items-center gap-6 flex-1">
+              {!(isAuthenticated && isDashboardRoute) && (
+                <>
+                  <Link to="/" className="flex items-center gap-2.5 group">
+                    <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 transition-transform group-hover:scale-95">
+                      <Radio className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="hidden min-[380px]:inline font-display text-xl font-bold tracking-tight text-navy">
+                      VoteHub
+                    </span>
+                  </Link>
 
-                <NavLink
-                  to="/create"
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white transition-all duration-200 hover:scale-105 hover:shadow-md hover:shadow-cyan-500/20"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>New Poll</span>
-                </NavLink>
+                  <NavLink
+                    to="/polls"
+                    className={({ isActive }) =>
+                      `hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                        isActive
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-slate-600 dark:text-slate-300 hover:text-navy dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`
+                    }
+                  >
+                    <Compass className="w-3.5 h-3.5" />
+                    Explore Polls
+                  </NavLink>
+                </>
+              )}
 
-                {/* User avatar */}
-                <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-white/10">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white uppercase shadow-sm">
-                    {user?.username?.[0] || 'U'}
-                  </div>
-                  <span className="text-xs text-slate-400 max-w-[80px] truncate font-medium">
-                    {user?.username}
-                  </span>
+              {/* Search Bar for Dashboard */}
+              {isAuthenticated && isDashboardRoute && (
+                <div className="hidden md:flex relative max-w-md w-full">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search polls, topics..."
+                    className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/50 border-none outline-none focus:ring-2 focus:ring-primary/20 text-sm dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  />
                 </div>
+              )}
+            </div>
 
-                <button
-                  onClick={handleLogout}
-                  title="Sign out"
-                  className="p-1.5 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/8 transition-all duration-200"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  to="/signup"
-                  className="px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-400 hover:to-violet-400 text-white transition-all duration-200 hover:scale-105 hover:shadow-md hover:shadow-cyan-500/20"
-                >
-                  Get started
-                </Link>
-              </>
-            )}
-          </div>
-        </nav>
-      </header>
+            {/* Right actions */}
+            <div className="flex min-w-0 items-center gap-1.5 sm:gap-4 shrink-0">
+              <button
+                aria-label="Toggle theme"
+                onClick={() => setTheme(isDark ? 'light' : 'dark')}
+                className="p-2 rounded-xl text-slate-400 hover:text-navy dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all"
+                title="Toggle Theme"
+              >
+                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
 
-      {/* ── Page content ──────────────────────────────────────────────────────── */}
-      <main className="flex-1">
-        <motion.div
-          key={typeof window !== 'undefined' ? window.location.pathname : 'page'}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.25, ease: 'easeOut' }}
-        >
-          {children}
-        </motion.div>
-      </main>
+              {isAuthenticated ? (
+                <>
+                  <button aria-label="Notifications" className="p-2 text-slate-400 hover:text-navy dark:hover:text-white transition-colors relative">
+                    <Bell className="w-5 h-5" />
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-[var(--bg-surface)]"></span>
+                  </button>
 
-      {/* ── Mobile Bottom Navigation Bar (Image-based design) ──────────── */}
-      <MobileNavBar />
+                  <NavLink
+                    to="/create"
+                    className="flex min-h-10 items-center justify-center gap-1.5 rounded-xl px-2.5 sm:px-4 py-2 text-sm font-semibold bg-primary hover:bg-primary-hover text-white transition-all duration-200 hover-lift shadow-md shadow-primary/20"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span className="hidden sm:inline">Create New</span>
+                  </NavLink>
 
-      {/* ── Footer ────────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-white/[0.06] py-8 pb-24 md:pb-8 glass">
-        <div className="max-w-6xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600 font-mono">
-          <div className="flex items-center gap-2">
-            <Radio className="w-3.5 h-3.5 text-cyan-500/60" />
-            <span>PollStream Engine — Distributed Real-Time Polling</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Go · Redis Pub/Sub · WebSockets · MongoDB</span>
-          </div>
-        </div>
-      </footer>
+                  <button
+                    onClick={handleLogout}
+                    title="Sign out"
+                    className="p-2 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-navy dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-all"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="px-5 py-2 rounded-xl text-sm font-semibold bg-primary hover:bg-primary-hover text-white transition-all hover-lift shadow-md shadow-primary/20"
+                  >
+                    Get started
+                  </Link>
+                </>
+              )}
+            </div>
+          </nav>
+        </header>
+
+        {/* ── Page content ──────────────────────────────────────────────────────── */}
+        <main className="flex-1 relative overflow-x-hidden">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {children}
+          </motion.div>
+        </main>
+
+        <MobileNavBar />
+
+        {/* ── Footer ────────────────────────────────────────────────────────────── */}
+        {!isDashboardRoute && (
+          <footer className="border-t border-slate-200 dark:border-[var(--border)] py-8 pb-24 md:pb-8 bg-white dark:bg-[var(--bg-base)] mt-auto">
+            <div className="max-w-6xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400 font-mono">
+              <div className="flex items-center gap-2">
+                <Radio className="w-3.5 h-3.5 text-primary" />
+                <span>VoteHub Engine — Distributed Real-Time Polling</span>
+              </div>
+            </div>
+          </footer>
+        )}
+      </div>
     </div>
   );
 }

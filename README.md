@@ -1,98 +1,213 @@
-# PollStream — Real-Time Polling System
+# ⚡ VoteHub — Real-Time Polling & Analytics Engine
 
-A full-stack, real-time polling application where creators can generate polls, share links (or QR codes), and watch votes come in live. Built with a focus on high performance, modern UI, and immediate feedback.
+VoteHub is a production-ready, full-stack, real-time polling platform. Built with **Go**, **Redis Pub/Sub**, **MongoDB**, and **React**, it enables creators to generate polls, share direct links or QR codes, and monitor incoming votes live with sub-100ms latency.
 
-## 🚀 Features
+---
 
-- **Real-Time Updates**: WebSocket integration pushes new votes to all clients instantly.
-- **Vote Deduplication**: Redis `SETNX` fingerprinting (SHA-256 of UserID+IP+UserAgent) prevents double voting without hitting the database.
-- **Modern UI**: Dark-themed, glassmorphism UI with Framer Motion animations for option bars and transitions.
-- **Dashboard**: Creators can track all their polls, see live total votes, and close polls when finished.
-- **Mobile First**: Fully responsive design with an integrated QR code generator for easy sharing.
-- **Secure Auth**: JWT-based authentication for poll creators.
+## 🌟 Key Features
 
-## 🏗️ Architecture
+- ⚡ **Real-Time Sync**: Instant WebSocket broadcasting powered by Redis Pub/Sub streams vote counts live to all connected clients.
+- 📊 **Live Analytics Control Room (`/analytics`)**: Interactive analytics dashboard featuring poll selection sidebars, live activity feeds, animated percentage breakdown bars, and real-time WebSocket connection waveforms.
+- 🌐 **Public Poll Gallery (`/polls`)**: Browse live polls created by the community, filter by active/closed status, search by keywords, and vote directly.
+- 🔑 **Instant Poll Code Join**: Type or paste any 8-character poll code (e.g. `sG5NqoU9`) on the landing, explore, or voting page to enter the voting booth instantly.
+- 📱 **QR Access & 1-Click Sharing**: Auto-generated QR codes for mobile scanning, 1-click link copying, and instant WhatsApp & Twitter/X share links.
+- 🛡️ **Smart Vote Deduplication**: Multi-layer deduplication using SHA-256 fingerprinting (UserID + IP + UserAgent), Redis `SETNX` keys (24-hour TTL), and browser session storage.
+- 🔑 **Flexible Authentication**: JWT email/password auth plus **Google OAuth** and **GitHub OAuth 2.0** Single Sign-On.
+- 🌗 **Dynamic Light & Dark Theme**: Sleek glassmorphism UI supporting both dark mode and high-contrast light mode with CSS variable design tokens.
+- ⏳ **Poll Expiry Management**: Set custom expiration timestamps for automatic poll conclusion and validation.
 
+---
+
+## 🏗️ Architecture & Flow
+
+```text
+               +----------------------------------+
+               |     Frontend (React 19 + Vite)   |
+               +----------------+-----------------+
+                                |
+                   HTTP REST    |    WebSockets
+                   (Axios/Fetch)|    (ws://...)
+                                v
+               +----------------+-----------------+
+               |     Backend (Go / Gin Engine)    |
+               +-------+------------------+-------+
+                       |                  |
+           Database    |                  |  Pub/Sub & Deduplication
+           Storage     v                  v
+               +-------+--------+   +-----+--------+
+               | MongoDB Atlas  |   | Redis Cache  |
+               +----------------+   +--------------+
 ```
-[ Frontend (React/Vite) ] <--- WebSockets ---> [ Backend (Go/Gin) ]
-           |                                          |
-           | REST API                                 |
-           v                                          |
-     [ Vercel CDN ]                            +------+------+
-                                               |             |
-                                      [ Redis ] (Pub/Sub)  [ MongoDB ] (Storage)
-```
 
-### Tech Stack
-- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS v4, Framer Motion, React Router DOM, Lucide Icons.
-- **Backend**: Go (1.22), Gin Web Framework, Gorilla WebSocket, Go-Redis, Mongo-Driver, JWT, Bcrypt.
-- **Database**: MongoDB (Atlas) for persistent storage of users, polls, and vote records.
-- **Cache/Realtime**: Redis for rate-limiting, vote deduplication, fast counters, and Pub/Sub broadcasting to WebSocket hubs.
+1. **Vote Submission**: Voter submits an option via `/api/v1/polls/:shareCode/vote`.
+2. **Deduplication Check**: Redis verifies fingerprint with `SetNX("voted:<shareCode>:<fingerprint>", "1")`.
+3. **Storage & Counters**: Vote document is saved to MongoDB; option counters are atomically incremented in Redis (`HIncrBy`).
+4. **Live Broadcast**: Redis publishes payload to `poll:<shareCode>` channel; Go WebSocket Hub broadcasts payload to all connected clients instantly.
 
-## 🛠️ Local Development Setup
+---
+
+## 🛠️ Tech Stack
+
+### Backend
+- **Language**: Go 1.22+
+- **HTTP Framework**: Gin Web Framework
+- **WebSockets**: Gorilla WebSocket
+- **Caching & Real-Time**: Go-Redis v9 (Pub/Sub & HASH counters)
+- **Database**: MongoDB Go Driver (bson/primitive)
+- **Authentication**: JWT (golang-jwt/jwt v5), Bcrypt, OAuth2 (Google & GitHub)
+
+### Frontend
+- **Framework**: React 19, TypeScript, Vite
+- **Styling**: Vanilla CSS Variables, Tailwind CSS v4
+- **Animations**: Framer Motion, Canvas Confetti
+- **Icons**: Lucide React Icons
+- **QR Code**: QRCodeSVG (`qrcode.react`)
+
+---
+
+## 🚀 Getting Started Locally
 
 ### Prerequisites
-- Go 1.22+
-- Node.js 20+
-- Docker & Docker Compose (for local Redis/Mongo)
+- **Node.js**: v20+
+- **Go**: 1.22+
+- **Docker & Docker Compose** (Optional for local Redis & Mongo)
 
-### 1. Start Infrastructure (Redis & MongoDB)
+---
+
+### 1. Clone & Setup Infrastructure
+
+```bash
+git clone https://github.com/your-username/pooling_system.git
+cd pooling_system
+```
+
+If using Docker for local MongoDB and Redis:
 ```bash
 docker-compose up -d
 ```
 
-### 2. Run the Backend
+---
+
+### 2. Configure Environment Variables
+
+#### Backend Configuration (`backend/.env`)
+Create `backend/.env`:
+```env
+PORT=8080
+ENV=development
+MONGO_URI=mongodb://localhost:27017
+MONGO_DB=polling_system
+REDIS_ADDR=localhost:6379
+REDIS_PASSWORD=
+JWT_SECRET=super-secret-jwt-key-32-chars-min
+CORS_ALLOWED_ORIGINS=http://localhost:5173
+
+# Optional OAuth Configuration
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+```
+
+#### Frontend Configuration (`frontend/.env`)
+Create `frontend/.env`:
+```env
+VITE_API_URL=http://localhost:8080
+VITE_PUBLIC_URL=http://localhost:5173
+```
+
+---
+
+### 3. Run Backend
+
 ```bash
 cd backend
-# Create a .env file based on .env.example
-# The default local setup works out of the box with the docker-compose services
 go mod tidy
 go run ./cmd/server
 ```
-*Backend runs on http://localhost:8080*
+Backend API will listen on **`http://localhost:8080`**.
 
-### 3. Run the Frontend
+---
+
+### 4. Run Frontend
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-*Frontend runs on http://localhost:5173* (Vite proxies `/api` and `/ws` to the backend)
+Frontend app will run on **`http://localhost:5173`**.
 
-## 🚢 Deployment Guide
-
-### Backend (Railway / Fly.io / Render)
-1. Provide the `backend` folder to your PaaS.
-2. The included `Dockerfile` builds a lightweight alpine image.
-3. Set Environment Variables:
-   - `PORT`: (Auto-provided by most PaaS)
-   - `ENV`: `production`
-   - `MONGO_URI`: Your MongoDB Atlas connection string
-   - `MONGO_DB`: `polling_system`
-   - `REDIS_ADDR`: Your managed Redis URL
-   - `REDIS_PASSWORD`: (if applicable)
-   - `JWT_SECRET`: A strong, secure 32+ character random string
-   - `CORS_ALLOWED_ORIGINS`: Your frontend URL (e.g., `https://pollstream.vercel.app`)
-
-### Frontend (Vercel / Netlify)
-1. Deploy the `frontend` directory.
-2. Framework Preset: Vite
-3. Include the `vercel.json` for proper SPA routing.
-4. Set Environment Variables:
-   - `VITE_API_URL`: Your deployed backend URL (e.g., `https://polling-backend.up.railway.app`). Do not include trailing slashes.
+---
 
 ## 📡 API Reference
 
-| Endpoint | Method | Auth | Description |
-|---|---|---|---|
-| `/api/v1/auth/signup` | POST | Public | Create an account |
-| `/api/v1/auth/login` | POST | Public | Get JWT token |
-| `/api/v1/polls` | POST | Required | Create a new poll |
-| `/api/v1/polls/me` | GET | Required | List user's polls |
-| `/api/v1/polls/:shareCode` | GET | Public | View poll data |
-| `/api/v1/polls/:shareCode/vote` | POST | Optional | Submit a vote |
-| `/api/v1/polls/:shareCode/close`| PUT | Owner | Close a poll |
-| `/ws/poll/:shareCode` | GET | Public | WebSocket for live updates |
+### 🔓 Public Endpoints
 
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/v1/ping` | `GET` | Health check & uptime |
+| `/api/v1/polls` | `GET` | List recent public polls |
+| `/api/v1/polls/:shareCode` | `GET` | Fetch details & options for a poll |
+| `/api/v1/polls/:shareCode/vote` | `POST` | Cast a vote (optional auth, session-deduplicated) |
+| `/ws/poll/:shareCode` | `GET` | WebSocket connection for real-time live tally updates |
 
-but i seeing the fail to crfeating polling so correct and then giving the link and qr to the attend that polling then that i set expiry date is not working...then i need more animatic responce in the any screen viewing
+### 🔐 Authentication Endpoints
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/v1/auth/signup` | `POST` | Register a new user account |
+| `/api/v1/auth/login` | `POST` | Login with email & password |
+| `/api/v1/auth/oauth/google` | `GET` | Initiate Google OAuth Single Sign-On |
+| `/api/v1/auth/oauth/github` | `GET` | Initiate GitHub OAuth Single Sign-On |
+
+### 🛡️ Protected Creator Endpoints (JWT Required)
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/v1/polls` | `POST` | Create a new poll with options & optional expiry |
+| `/api/v1/polls/me` | `GET` | Retrieve polls created by authenticated user |
+| `/api/v1/polls/:shareCode/close` | `PUT` | Manually close voting on a poll |
+
+---
+
+## 📂 Project Structure
+
+```text
+pooling_system/
+├── backend/
+│   ├── cmd/
+│   │   └── server/
+│   │       └── main.go           # Server entry point & route definitions
+│   ├── internal/
+│   │   ├── config/               # Environment & app config loader
+│   │   ├── database/             # MongoDB & Redis client initializers
+│   │   ├── handlers/             # Auth, Poll, Vote, OAuth & WS handlers
+│   │   ├── hub/                  # WebSocket connection manager hub
+│   │   ├── middleware/           # Auth & CORS middleware
+│   │   ├── models/               # MongoDB BSON & JSON data structures
+│   │   └── utils/                # Password hashing & JWT helpers
+│   ├── go.mod
+│   └── Dockerfile
+├── frontend/
+│   ├── src/
+│   │   ├── api/                  # Typed fetch API client
+│   │   ├── components/           # Navbar, Sidebar, Toast, AnimatedCounter
+│   │   ├── context/              # Auth & Theme context providers
+│   │   ├── hooks/                # useAuth, useLivePoll, useTheme
+│   │   ├── pages/                # Landing, Dashboard, Poll, Analytics, Explore
+│   │   ├── utils/                # confetti, pollUrl helpers
+│   │   ├── App.tsx               # Route declarations & Framer Motion transitions
+│   │   └── index.css             # CSS Variables & theme tokens
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.ts
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+## 📜 License
+
+This project is open source and available under the [MIT License](LICENSE).
