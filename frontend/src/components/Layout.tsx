@@ -2,6 +2,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { LogOut, Plus, Radio } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
+import { MobileNavBar } from './MobileNavBar';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user, logout } = useAuth();
@@ -110,8 +111,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </motion.div>
       </main>
 
+      {/* ── Mobile Bottom Navigation Bar (Image-based design) ──────────── */}
+      <MobileNavBar />
+
       {/* ── Footer ────────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-white/[0.06] py-8 glass">
+      <footer className="border-t border-white/[0.06] py-8 pb-24 md:pb-8 glass">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600 font-mono">
           <div className="flex items-center gap-2">
             <Radio className="w-3.5 h-3.5 text-cyan-500/60" />
