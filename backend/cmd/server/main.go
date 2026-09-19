@@ -104,6 +104,36 @@ func main() {
 
 	// Status response handler for root/api routes
 	statusHandler := func(c *gin.Context) {
+		accept := c.GetHeader("Accept")
+		if strings.Contains(accept, "text/html") {
+			c.Header("Content-Type", "text/html")
+			c.String(http.StatusOK, `
+				<!DOCTYPE html>
+				<html>
+				<head>
+					<title>PollStream Backend API</title>
+					<style>
+						body { font-family: system-ui, sans-serif; background: #080b14; color: #fff; text-align: center; padding-top: 20vh; margin: 0; }
+						.box { display: inline-block; padding: 2rem; border-radius: 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+						h1 { color: #22d3ee; margin-top: 0; }
+						p { color: #94a3b8; }
+						.status { display: inline-flex; items-center; gap: 0.5rem; background: rgba(52,211,153,0.1); color: #34d399; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem; }
+						.dot { width: 8px; height: 8px; background-color: #34d399; border-radius: 50%; box-shadow: 0 0 8px #34d399; }
+					</style>
+				</head>
+				<body>
+					<div class="box">
+						<div class="status"><div class="dot"></div>API is running</div>
+						<h1>PollStream Backend</h1>
+						<p>The PollStream Real-Time API is online and accepting connections.</p>
+						<p style="font-size: 0.8em; margin-top: 2rem; color: #64748b;">Endpoints: /api/v1 | /ws/poll/:shareCode | /health</p>
+					</div>
+				</body>
+				</html>
+			`)
+			return
+		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"service": "PollStream Real-Time Polling Engine",
 			"status":  "online",
