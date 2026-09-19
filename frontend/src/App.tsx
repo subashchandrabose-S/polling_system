@@ -10,6 +10,7 @@ import { SignupPage } from './pages/SignupPage';
 import { CreatePollPage } from './pages/CreatePollPage';
 import { PollPage } from './pages/PollPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { OAuthCallbackPage } from './pages/OAuthCallbackPage';
 
 export default function App() {
   return (
@@ -26,6 +27,9 @@ export default function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/poll/:shareCode" element={<PollPage />} />
+
+                {/* OAuth callback — receives ?token=<jwt> from backend */}
+                <Route path="/auth/callback" element={<OAuthCallbackPage />} />
 
                 {/* Protected */}
                 <Route

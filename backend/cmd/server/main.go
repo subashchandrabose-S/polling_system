@@ -60,14 +60,16 @@ func main() {
 
 	// ── Handlers ──────────────────────────────────────────────────────────────
 	var (
-		authHandler *handlers.AuthHandler
-		pollHandler *handlers.PollHandler
-		voteHandler *handlers.VoteHandler
-		wsHandler   *handlers.WSHandler
+		authHandler  *handlers.AuthHandler
+		oauthHandler *handlers.OAuthHandler
+		pollHandler  *handlers.PollHandler
+		voteHandler  *handlers.VoteHandler
+		wsHandler    *handlers.WSHandler
 	)
 
 	if mongoInstance != nil {
 		authHandler = handlers.NewAuthHandler(cfg, mongoInstance.Database)
+		oauthHandler = handlers.NewOAuthHandler(cfg, mongoInstance.Database)
 		var rdbClient interface{ Close() error } = redisInstance
 
 		var rdb interface{} = nil
@@ -185,6 +187,17 @@ func main() {
 			{
 				auth.POST("/signup", authHandler.Signup)
 				auth.POST("/login", authHandler.Login)
+
+				// OAuth — Google & GitHub
+				if oauthHandler != nil {
+					oauth := auth.Group("/oauth")
+					{
+						oauth.GET("/google", oauthHandler.GoogleLogin)
+						oauth.GET("/google/callback", oauthHandler.GoogleCallback)
+						oauth.GET("/github", oauthHandler.GithubLogin)
+						oauth.GET("/github/callback", oauthHandler.GithubCallback)
+					}
+				}
 			}
 		}
 

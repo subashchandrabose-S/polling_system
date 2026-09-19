@@ -12,9 +12,13 @@ type User struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Username     string             `bson:"username" json:"username"`
 	Email        string             `bson:"email" json:"email"`
-	PasswordHash string             `bson:"password_hash" json:"-"`
-	CreatedAt    time.Time          `bson:"created_at" json:"created_at"`
-	UpdatedAt    time.Time          `bson:"updated_at" json:"updated_at"`
+	PasswordHash string             `bson:"password_hash,omitempty" json:"-"`
+	// OAuth fields — set when user signs in with Google/GitHub
+	OAuthProvider string `bson:"oauth_provider,omitempty" json:"oauth_provider,omitempty"`
+	OAuthID       string `bson:"oauth_id,omitempty" json:"-"`
+	AvatarURL     string `bson:"avatar_url,omitempty" json:"avatar_url,omitempty"`
+	CreatedAt     time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt     time.Time          `bson:"updated_at" json:"updated_at"`
 }
 
 // SetPassword hashes and assigns the user's password

@@ -7,6 +7,28 @@ import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/Toast';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 
+const BACKEND_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+const oauthUrl = (provider: string) =>
+  BACKEND_BASE
+    ? `${BACKEND_BASE}/api/v1/auth/oauth/${provider}`
+    : `/api/v1/auth/oauth/${provider}`;
+
+const GoogleIcon = () => (
+  <svg viewBox="0 0 48 48" className="w-4 h-4" aria-hidden>
+    <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.2l6.8-6.8C35.9 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.3l7.9 6.1C12.4 13.4 17.7 9.5 24 9.5z" />
+    <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z" />
+    <path fill="#FBBC05" d="M10.5 28.6A14.7 14.7 0 019.5 24c0-1.6.3-3.2.8-4.6L2.4 13.3A23.9 23.9 0 000 24c0 3.9.9 7.5 2.6 10.7l7.9-6.1z" />
+    <path fill="#34A853" d="M24 48c6.3 0 11.6-2.1 15.4-5.7l-7.5-5.8c-2.1 1.4-4.8 2.3-7.9 2.3-6.3 0-11.6-3.9-13.5-9.4l-7.9 6.1C6.5 42.6 14.6 48 24 48z" />
+  </svg>
+);
+
+const GithubIcon = () => (
+  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" aria-hidden>
+    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58 0-.28-.01-1.02-.01-2-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.94 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 013-.4c1.02.01 2.04.14 3 .4 2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.62-2.81 5.63-5.48 5.93.43.37.82 1.1.82 2.22 0 1.6-.01 2.9-.01 3.29 0 .32.21.7.83.58C20.57 21.8 24 17.3 24 12 24 5.37 18.63 0 12 0z" />
+  </svg>
+);
+
+
 export function SignupPage() {
   const { login } = useAuth();
   const { toast } = useToast();
@@ -178,6 +200,37 @@ export function SignupPage() {
               <span>{loading ? 'Creating account…' : 'Create account'}</span>
             </button>
           </form>
+
+          {/* Social OAuth divider */}
+          <div className="relative my-5">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/[0.06]" />
+            </div>
+            <div className="relative flex justify-center text-[11px]">
+              <span className="px-3 bg-[#111827] text-slate-500 font-mono uppercase tracking-widest">
+                or sign up with
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <a
+              id="signup-google"
+              href={oauthUrl('google')}
+              className="flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl border border-white/[0.09] bg-white/[0.03] hover:bg-white/[0.07] text-slate-200 text-xs font-semibold transition-all duration-200 hover:border-white/20 hover:scale-[1.02] active:scale-95"
+            >
+              <GoogleIcon />
+              Google
+            </a>
+            <a
+              id="signup-github"
+              href={oauthUrl('github')}
+              className="flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl border border-white/[0.09] bg-white/[0.03] hover:bg-white/[0.07] text-slate-200 text-xs font-semibold transition-all duration-200 hover:border-white/20 hover:scale-[1.02] active:scale-95"
+            >
+              <GithubIcon />
+              GitHub
+            </a>
+          </div>
 
           <p className="text-center text-xs text-slate-600 mt-6 pt-5 border-t border-white/[0.06]">
             Already have an account?{' '}

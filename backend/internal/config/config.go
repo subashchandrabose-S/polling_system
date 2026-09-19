@@ -24,6 +24,13 @@ type Config struct {
 	RateLimitRequests   int
 	RateLimitWindowSecs int
 	CORSAllowedOrigins  []string
+
+	// OAuth
+	GoogleClientID     string
+	GoogleClientSecret string
+	GithubClientID     string
+	GithubClientSecret string
+	FrontendURL        string
 }
 
 // LoadConfig reads configuration from environment variables with fallback defaults
@@ -56,6 +63,13 @@ func LoadConfig() *Config {
 		RateLimitRequests:   getEnvAsInt("RATE_LIMIT_REQUESTS", 100),
 		RateLimitWindowSecs: getEnvAsInt("RATE_LIMIT_WINDOW_SECONDS", 60),
 		CORSAllowedOrigins:  allowedOrigins,
+
+		// OAuth
+		GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
+		GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
+		GithubClientID:     getEnv("GITHUB_CLIENT_ID", ""),
+		GithubClientSecret: getEnv("GITHUB_CLIENT_SECRET", ""),
+		FrontendURL:        getEnv("FRONTEND_URL", "http://localhost:5173"),
 	}
 }
 
